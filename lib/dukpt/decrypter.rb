@@ -15,5 +15,12 @@ module DUKPT
       decrypted_cryptogram = triple_des_decrypt(pek, cryptogram)
       [decrypted_cryptogram].pack('H*')
     end
+
+    def decrypt_dek(cryptogram, ksn)
+      ipek = derive_IPEK(bdk, ksn)
+      dek = derive_DEK(ipek, ksn)
+      decrypted_cryptogram = triple_des_decrypt(dek, cryptogram)
+      [decrypted_cryptogram].pack('H*')
+    end
   end
 end
