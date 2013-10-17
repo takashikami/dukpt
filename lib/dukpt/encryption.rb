@@ -13,12 +13,22 @@ module DUKPT
     DEK_MASK        = 0x0000000000FF00000000000000FF0000 # Used by IDTECH reader
 
     def cipher_mode=(cipher_type)
-      if cipher_type == "ecb"
-        @cipher_type_des = "des-ecb"
-        @cipher_type_tdes = "des-ede"
+      if defined? JRUBY_VERSION
+        if cipher_type == "ecb"
+          @cipher_type_des = "des-ecb"
+          @cipher_type_tdes = "des-ede3-ecb"
+        else
+          @cipher_type_des = "des-cbc"
+          @cipher_type_tdes = "des-ede3-cbc"
+        end
       else
-        @cipher_type_des = "des-cbc"
-        @cipher_type_tdes = "des-ede-cbc"
+        if cipher_type == "ecb"
+          @cipher_type_des = "des-ecb"
+          @cipher_type_tdes = "des-ede"
+        else
+          @cipher_type_des = "des-cbc"
+          @cipher_type_tdes = "des-ede-cbc"
+        end
       end
     end
 
@@ -120,7 +130,7 @@ module DUKPT
     end
 
     def cipher_type_tdes
-      @cipher_type_tdes || "des-ede-cbc"
+      @cipher_type_tdes || "des-ede3-cbc"
     end
     
     def hex_string_from_val val, bytes
@@ -139,6 +149,7 @@ module DUKPT
     end
     
     def openssl_encrypt(cipher_type, key, message, is_encrypt)
+      key = key + key[0..15] if defined? JRUBY_VERSION && (cipher_type == "des-ede3-cbc" || cipher_type == "des-ede3-ecb")
     	cipher = OpenSSL::Cipher::Cipher::new(cipher_type)
     	is_encrypt ? cipher.encrypt : cipher.decrypt
     	cipher.padding = 0

@@ -5,8 +5,7 @@ require 'dukpt'
 class DUKPT::EncryptionTest < Test::Unit::TestCase
   include DUKPT::Encryption
   
-  def test_least_signinficant_16_nibbles_mask
-    expected = 0x00009876543210E00008
+  def test_least_signinficant_16_nibbles_mask expected = 0x00009876543210E00008
     actual   = 0xFFFF9876543210E00008 & LS16_MASK
     assert_equal expected, actual
   end
@@ -100,7 +99,11 @@ def test_derive_pek_counter_EFF800
   def test_cipher_mode_ecb
     self.cipher_mode = "ecb"
     assert_equal cipher_type_des, "des-ecb"
-    assert_equal cipher_type_tdes, "des-ede"
+    if defined? JRUBY_VERSION
+      assert_equal cipher_type_tdes, "des-ede3-ecb"
+    else
+      assert_equal cipher_type_tdes, "des-ede"
+    end
   end
 
   def test_dek_from_key 
